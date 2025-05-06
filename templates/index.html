@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signa! - Sign Language Avatar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo">SIGNA</div>
+        <div class="login-section">
+            <button id="loginToggle" class="login-toggle">Log In</button>  
+            <form class="login-form" id="loginForm" style="display: none;">
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" placeholder="you@example.com">
+      
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" placeholder="********">
+      
+            <button type="button">Submit</button>
+          </form>
+        </div>
+      </div>             
+      
+    <header>
+        <p>Your AI-powered South African Sign Language assistant</p>
+        <br>
+        <div class="mic-wrapper">
+            <div class="mic-label">Start Listening</div>
+            <button onclick="startListening()" class="start-circle">🎙️</button>
+        </div>
+    </header>
+
+    <section id="listening" class="listening hidden">
+        🎙️ Listening...
+    </section>
+
+    <section id="output" class="output hidden">
+        <div class="info">
+        <strong>Recognized:</strong> <span id="recognizedText"></span>
+        </div>
+        <video id="signVideo" controls autoplay muted class="hidden"></video>
+    </section>
+    <span id="recognizedText" style="font-size: 1.5rem; color: #e6ef66;"></span>
+
+    <script>
+        async function startListening() {
+        const avatar = "avatar_a";
+        const listeningDiv = document.getElementById('listening');
+        listeningDiv.classList.remove("hidden"); // Show "Listening..."
+
+        try {
+            const res = await fetch(`/listen?avatar=${avatar}`);
+            const data = await res.json();
+
+            listeningDiv.classList.add("hidden"); // Hide after done
+
+            const outputDiv = document.getElementById('output');
+            const video = document.getElementById('signVideo');
+            const text = document.getElementById('recognizedText');
+
+            outputDiv.classList.remove("hidden");
+            text.textContent = data.recognized_text || "(no result)";
+
+            if (data.sign_id) {
+            video.src = `/static/videos/${data.sign_id}`;
+            video.classList.remove("hidden");
+            setTimeout(() => {
+                video.scrollIntoView({ behavior: "smooth" });
+            }, 300);
+
+            } else {
+            video.classList.add("hidden");
+            }
+        } catch (err) {
+            listeningDiv.classList.add("hidden");
+            alert("Error: " + err);
+        }
+        }
+
+        const loginToggle = document.getElementById("loginToggle");
+        const loginForm = document.getElementById("loginForm");
+
+        loginToggle.addEventListener("click", () => {
+        loginForm.style.display = loginForm.style.display === "none" ? "flex" : "none";
+        });
+
+    </script>
+    <section class="avatar-selection">
+        <h2>Available avatars</h2>
+        <div class="avatar-cards">
+        <div class="avatar-card" style="background-image: url('/static/images/bot_avatar.png');">
+            <div class="overlay">
+            <h3>Avatar A</h3>
+            <p>Realistic 3D motion-captured avatar with natural signing.</p>
+            </div>
+        </div>
+        <div class="avatar-card" style="background-image: url('/static/images/user_avatar.png');">
+            <div class="overlay">
+            <h3>Avatar B</h3>
+            <p>Your personal animated avatar</p>
+            </div>
+        </div>
+        <div class="avatar-card" style="background-image: url('/static/images/add_avatar.png');">
+            <div class="overlay">
+            <h3>Avatar C</h3>
+            <p>Add another avatar</p>
+            </div>
+        </div>
+        </div>
+    </section>
+    
+</body>
+</html>
